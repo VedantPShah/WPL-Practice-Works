@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Search Nearby Schools</title>
+    
+    <script
+      src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDxLNcsbmWYkwYYLoxzVBhFIbBeCTHDRHk&callback=initialize&libraries=places"
+      defer
+    ></script>
+    <style type="text/css">
+      /* Always set the map height explicitly to define the size of the div
+       * element that contains the map. */
+      #map {
+        height: 100%;
+      }
+
+      /* Optional: Makes the sample page fill the window. */
+      html,
+      body {
+        height: 100%;
+        margin: 0;
+        padding: 0;
+      }
+    </style>
+    <script>
+
+
+    var map;
+    var service;
+    var geocoder;
+
+    function initialize() {
+      var currentloc = new google.maps.LatLng(32.985771, -96.750003 );
+
+      map = new google.maps.Map(document.getElementById('map'), {
+          center: currentloc,
+          zoom: 15
+        });
+
+      service = new google.maps.places.PlacesService(map);
+
+      geocoder = new google.maps.Geocoder();
+      document.getElementById("submit").addEventListener("click", () => {
+        geoAddress(geocoder, map);
+        });
+
+    }
+
+    function geoAddress(geocoder, resultsMap) {
+        var address = document.getElementById("address").value;
+        geocoder.geocode({ address: address }, (results, status) => {
+         
+            var loc = results[0].geometry.location;
+            resultsMap.setCenter(loc);
+            var latitude = loc.lat().toString();
+	        var longitude = loc.lng().toString();
+            var newloc = new google.maps.LatLng(latitude, longitude);
+
+            map = new google.maps.Map(document.getElementById('map'), {
+	          center: newloc,
+	          zoom: 15
+	          });
+
+            var request = {
+		        location: newloc,
+		        radius: "2000",
+		        type: ["school"]
+      	  	};
+	        
+            service = new google.maps.places.PlacesService(map);
+            service.nearbySearch(request, callback);
+          
+        });
+      }
+    
+
+
+    function callback(results, status) {
+      if (status == google.maps.places.PlacesServiceStatus.OK) {
+        for (var i = 0; i < results.length; i++) { 
+
+          new google.maps.Marker({
+            map,
+            title: results[i].name,
+            position: results[i].geometry.location,
+          });
+
+
+        }
+      }
+    }
+
+
+    </script>
+  </head>
+  <body>
+    <div id="loc">
+      <form>
+        <label>Location</label>
+        <input id="address" type="textbox" placeholder="Enter Address" />
+        <input id="submit" type="button" value="Search" />
+      </form>
+      <label>Find Schools in the Given Location Radius</label>
+    </div>
+    <hr/>
+    <div id="map"></div>
+  </body>
+</html>
